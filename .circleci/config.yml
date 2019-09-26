@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: arsaga/laravel-alpine:7.2-zip
       - image: circleci/mysql:8.0.17
-          command: mysqld --default-authentication-plugin=mysql_native_password
+        command: mysqld --default-authentication-plugin=mysql_native_password
     environment:
       - APP_DEBUG: true
       - APP_ENV: testing
@@ -27,7 +27,7 @@ jobs:
           root: .
           paths:
             - .
-            -
+
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
