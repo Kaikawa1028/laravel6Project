@@ -1,6 +1,7 @@
 version: 2
-jobs:
-  build:
+executors:
+  testing-image:
+    working_directory: ~/repo
     docker:
       - image: circleci/php:7.3-stretch-node-browsers
       - image: circleci/mysql:8.0.17
@@ -10,10 +11,11 @@ jobs:
       - APP_ENV: testing
       - APP_KEY: base64:YlIJx6uH3OUb3hxN+PAiJKlC+EGZ2KYi8VHxsfdJpLk=
       - DB_CONNECTION: circleci
-      - TZ: Asia/Tokyo
 
-    working_directory: ~/repo
-
+jobs:
+  build:
+    executor:
+      name: testing-image
     steps:
       - checkout
       - restore_cache:
@@ -29,6 +31,13 @@ jobs:
           root: .
           paths:
             - .
+
+  test:
+    executor:
+      name: testing-image
+    steps:
+      - attach_workspace:
+          at: .
 
       - run:
           name: install dockerize
@@ -56,3 +65,6 @@ workflows:
   build:
     jobs:
       - build
+      - test:
+          requires:
+            - build
