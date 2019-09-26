@@ -12,6 +12,8 @@ jobs:
       - DB_CONNECTION: circleci
       - TZ: Asia/Tokyo
 
+    working_directory: ~/repo
+
     steps:
       - checkout
       - restore_cache:
