@@ -14,8 +14,6 @@ jobs:
 
     steps:
       - checkout
-      - restore_cache:
-          key: v1-composer-{{ checksum "composer.lock" }}
       - run:
           name: Install composer dependencies
           command: composer install --no-interaction --prefer-dist
