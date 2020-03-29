@@ -169,3 +169,6 @@ workflows:
       - deploy_web_assets_to_s3_develop:
           requires:
             - push_image_test_project_develop
+      - deploy_develop:
+          requires:
+            - deploy_web_assets_to_s3_develop
