@@ -155,7 +155,7 @@ jobs:
       - run:
           name: Register new migrate task definition
           command: aws ecs register-task-definition --family sample-project-dev-migrate --cli-input-json file://ci-migrate-task-definition.json --region ap-northeast-1
-     - run:
+      - run:
           name: Get network configurations
           command: |
             SUBNETS=$(aws ecs describe-services --cluster sample-project-dev --service app --region ap-northeast-1 --query "services[0].networkConfiguration.awsvpcConfiguration.subnets" --output text | awk '{printf "%s,%s",$1,$2}')
