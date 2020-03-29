@@ -131,6 +131,29 @@ jobs:
           to: "s3://sample-project.dev.assets/"
           overwrite: true
 
+  deploy_develop:
+    docker:
+      - image: circleci/python:2.7
+    working_directory: ~/test-project/.circleci/task-definitions/dev
+    steps:
+      - aws-cli/install
+      - attach_workspace:
+          at: ~/test-project
+      - run:
+          name: Load Task Definition File
+          command: |
+            jsons=(app-task-definition.json) && \
+            for json in ${jsons[@]}; do
+                printf "cat \<<EOF\n`cat $json`\nEOF\n" | sh > "ci-$json"
+            done
+      - run:
+          name: Register new app task definition
+          command: aws ecs register-task-definition --family sample-project-dev-app --cli-input-json file://ci-app-task-definition.json --region ap-northeast-1
+      - run:
+          name: Update app service
+          command: aws ecs update-service --cluster sample-project-dev --service app --desired-count 1 --task-definition sample-project-dev-app --region ap-northeast-1
+
+
 workflows:
   version: 2
   build-test-deploy:
