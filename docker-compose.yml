@@ -67,5 +67,5 @@ services:
       - "3306:3306"
     environment:
       - "MYSQL_ROOT_PASSWORD=root"
-      - "MYSQL_DATABASE=test"
+      - "MYSQL_DATABASE=laravel"
       - "MYSQL_USER=root"
