@@ -1,3 +1,3 @@
 FROM nginx:alpine
-COPY /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/
-ADD . /app
+
+COPY /nginx/nginx.dev.stg.conf /etc/nginx/nginx.conf

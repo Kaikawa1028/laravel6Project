@@ -88,6 +88,13 @@ jobs:
       - attach_workspace:
           at: ~/test-project
       - setup_remote_docker
+      - run:
+          name: create .env
+          command: |
+            cat \<<EOF > .env
+              AWS_S3_ACCESS_KEY_ID=${AWS_S3_ACCESS_KEY_ID}
+              AWS_S3_SECRET_ACCESS_KEY_ID=${AWS_S3_SECRET_ACCESS_KEY_ID}
+            EOF
       - aws-ecr/build-and-push-image:
           checkout: false
           repo: "sample-project-app-development"
@@ -107,6 +114,23 @@ jobs:
           repo: "sample-project-app-development"
           tag: "latest"
 
+  deploy_web_assets_to_s3_develop:
+    docker:
+      #      - image: circleci/python:2.7
+      - image: circleci/node:10
+    working_directory: ~/test-project
+    parameters:
+      bucket:
+        type: string
+        default: ""
+    steps:
+      - attach_workspace:
+          at: ~/test-project
+      - aws-s3/sync:
+          from: ./public
+          to: "s3://sample-project.dev.assets/"
+          overwrite: true
+
 workflows:
   version: 2
   build-test-deploy:
@@ -116,3 +140,6 @@ workflows:
       - build_and_test:
           requires:
             - checkout
+      - push_image_test_project_develop:
+          requires:
+            - build_and_test
