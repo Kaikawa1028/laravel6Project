@@ -65,7 +65,7 @@ jobs:
           paths:
             - ./vendor
           key: v1-composer-{{ checksum "composer.json" }}
-      - run: apk --update --no-cache add nodejs-current nodejs-npm alpine-sdk python
+      - run: apk --update --no-cache add nodejs nodejs-npm alpine-sdk
       - run: npm install
       - run: npm run production
       - run: php artisan migrate
