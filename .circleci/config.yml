@@ -142,7 +142,7 @@ jobs:
       - run:
           name: Load Task Definition File
           command: |
-            jsons=(app-task-definition.json) && \
+            jsons=(app-task-definition.json migrate-task-definition.json cron-task-definition.json) && \
             for json in ${jsons[@]}; do
                 printf "cat \<<EOF\n`cat $json`\nEOF\n" | sh > "ci-$json"
             done
@@ -152,7 +152,27 @@ jobs:
       - run:
           name: Update app service
           command: aws ecs update-service --cluster sample-project-dev --service app --desired-count 1 --task-definition sample-project-dev-app --region ap-northeast-1
-
+      - run:
+          name: Register new migrate task definition
+          command: aws ecs register-task-definition --family sample-project-dev-migrate --cli-input-json file://ci-migrate-task-definition.json --region ap-northeast-1
+     - run:
+          name: Get network configurations
+          command: |
+            SUBNETS=$(aws ecs describe-services --cluster sample-project-dev --service app --region ap-northeast-1 --query "services[0].networkConfiguration.awsvpcConfiguration.subnets" --output text | awk '{printf "%s,%s",$1,$2}')
+            SECURITY_GROUPS=$(aws ecs describe-services --cluster sample-project-dev --service app --region ap-northeast-1 --query "services[0].networkConfiguration.awsvpcConfiguration.securityGroups" --output text)
+            echo "export SUBNETS=$SUBNETS" >> $BASH_ENV
+            echo "export SECURITY_GROUPS=$SECURITY_GROUPS" >> $BASH_ENV
+      - run:
+          name: Run migration task
+          command: |
+            TASK_ARN=$(aws ecs run-task --launch-type FARGATE --cluster sample-project-dev --task-definition sample-project-dev-migrate --region ap-northeast-1 --count 1 --network-configuration "awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUPS],assignPublicIp=ENABLED}" --query "tasks[0].taskArn" --output text)
+            aws ecs wait tasks-stopped --cluster sample-project-dev --region ap-northeast-1 --tasks $TASK_ARN
+      - run:
+          name: Register new cron task definition
+          command: aws ecs register-task-definition --family sample-project-dev-cron --cli-input-json file://ci-cron-task-definition.json --region ap-northeast-1
+      - run:
+          name: Update cron service
+          command: aws ecs update-service --cluster sample-project-dev --service cron --desired-count 1 --task-definition sample-project-dev-cron --region ap-northeast-1
 
 workflows:
   version: 2
